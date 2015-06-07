@@ -39,6 +39,7 @@ app.use(function(req, res, next) {
 
 // development error handler
 // will print stacktrace
+app.set('env','production');
 if (app.get('env') === 'development') {
     app.listen(1337, '127.0.0.1');
     console.log('Server running at http://127.0.0.1:1337/');
