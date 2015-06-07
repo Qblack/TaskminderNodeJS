@@ -5,12 +5,26 @@ var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var http = require('http');
+var pg = require('pg');
 
 var routes = require('./routes/index');
 var users = require('./routes/users');
 
+
+
 var app = express();
 
+app.get('/db', function (request, response) {
+    pg.connect(process.env.DATABASE_URL, function(err, client, done) {
+        client.query('SELECT * FROM test_table', function(err, result) {
+            done();
+            if (err)
+            { console.error(err); response.send("Error " + err); }
+            else
+            { response.send(result.rows); }
+        });
+    });
+});
 
 
 // view engine setup
@@ -39,7 +53,10 @@ app.use(function(req, res, next) {
 
 // development error handler
 // will print stacktrace
-app.set('env','production');
+if (process.env.MODE=='productions'){
+    app.set('env','production');
+}
+
 if (app.get('env') === 'development') {
     app.listen(1337, '127.0.0.1');
     console.log('Server running at http://127.0.0.1:1337/');
