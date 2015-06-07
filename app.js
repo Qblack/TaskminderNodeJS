@@ -13,18 +13,16 @@ var users = require('./routes/users');
 
 
 var app = express();
+var conString  = 'postgres://gcleutjifmkgrw:D63xp6RFjXmGamLbiLiehyIXQ4@ec2-54-83-25-238.compute-1.amazonaws.com:5432/dcp5bvd5kbc84u';
 
-app.get('/db', function (request, response) {
-    pg.connect(process.env.DATABASE_URL, function(err, client, done) {
-        client.query('SELECT * FROM test_table', function(err, result) {
-            done();
-            if (err)
-            { console.error(err); response.send("Error " + err); }
-            else
-            { response.send(result.rows); }
-        });
-    });
-});
+
+
+if (process.env.MODE=='production'){
+    app.set('env','production');
+    conString  = process.env.DATABASE_URL;
+}
+
+
 
 
 // view engine setup
@@ -41,6 +39,21 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', routes);
 app.use('/users', users);
+app.get('/db', function (request, response) {
+    pg.connect(conString , function(err, client, done) {
+        if (err) {
+            return console.error('error fetching client from pool', err);
+        }
+        client.query('SELECT * FROM test_table', function(err, result) {
+            done();
+            if (err)
+            { console.error(err); response.send("Error " + err); }
+            else
+            { response.send(result.rows); }
+        });
+    });
+});
+
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
@@ -53,9 +66,7 @@ app.use(function(req, res, next) {
 
 // development error handler
 // will print stacktrace
-if (process.env.MODE=='productions'){
-    app.set('env','production');
-}
+
 
 if (app.get('env') === 'development') {
     app.listen(1337, '127.0.0.1');
