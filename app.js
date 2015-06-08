@@ -5,7 +5,6 @@ var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var http = require('http');
-var pg = require('pg');
 
 var routes = require('./routes/index');
 var users = require('./routes/users');
@@ -20,16 +19,6 @@ if (process.env.MODE=='production'){
     app.set('env','production');
     conString  = process.env.DATABASE_URL;
 }
-
-var client = new pg.Client({
-    user:'gcleutjifmkgrw',
-    password : 'D63xp6RFjXmGamLbiLiehyIXQ4',
-    database : 'dcp5bvd5kbc84u',
-    port: 5432,
-    host: 'ec2-54-83-25-238.compute-1.amazonaws.com',
-    ssl: true
-});
-client.connect();
 
 
 // view engine setup
@@ -46,15 +35,6 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', routes);
 app.use('/users', users);
-app.get('/db', function (request, response) {
-    client.query('SELECT * FROM test_table', function(err, result) {
-        if (err)
-        { console.error(err); response.send("Error " + err); }
-        else
-        { response.send(result.rows); }
-    });
-});
-
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
@@ -98,6 +78,5 @@ if (app.get('env') === 'development') {
 }
 
 
-
-module.exports = app;
+module.exports = app
 

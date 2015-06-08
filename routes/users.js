@@ -1,18 +1,48 @@
 var express = require('express');
+var db = require("../db");
 var router = express.Router();
 
 /* GET users listing. */
 router.get('/', function(req, res, next) {
-  res.send('Here all all the users');
+    var client = db.getConnection();
+    client.connect();
+    client.query('SELECT * FROM student', function(err, result) {
+        if (err) {
+            console.error(err);
+            res.send("Error " + err);
+        } else {
+            res.send(result.rows);
+        }
+    });
 });
 
 router.post('/', function(req, res, next) {
-    res.send('Creating a user');
+    var client = db.getConnection();
+    client.connect();
+    client.query('INSERT INTO student(name, email,username,school,program),' +
+        'values($1,$2,$3,$4,$5),',
+        ['teemo','teemo@gmail.com','Captain','WLU','BBA'], function(err, result) {
+        if (err) {
+            console.error(err);
+            res.send("Error " + err);
+        } else {
+            res.send(result);
+        }
+    });
 });
 
 
 router.get('/:id', function(req, res, next) {
-  res.send('Here is user '+req.params.id);
+    var client = db.getConnection();
+    client.connect();
+    client.query('SELECT * FROM student WHERE id=($!)',[req.params.id], function(err, result) {
+        if (err) {
+            console.error(err);
+            res.send("Error " + err);
+        } else {
+            res.send(result);
+        }
+    });
 });
 
 router.put('/:id', function(req, res, next) {
