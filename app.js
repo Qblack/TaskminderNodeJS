@@ -16,13 +16,20 @@ var app = express();
 var conString  = 'postgres://gcleutjifmkgrw:D63xp6RFjXmGamLbiLiehyIXQ4@ec2-54-83-25-238.compute-1.amazonaws.com:5432/dcp5bvd5kbc84u';
 
 
-
 if (process.env.MODE=='production'){
     app.set('env','production');
     conString  = process.env.DATABASE_URL;
 }
 
-
+var client = new pg.Client({
+    user:'gcleutjifmkgrw',
+    password : 'D63xp6RFjXmGamLbiLiehyIXQ4',
+    database : 'dcp5bvd5kbc84u',
+    port: 5432,
+    host: 'ec2-54-83-25-238.compute-1.amazonaws.com',
+    ssl: true
+});
+client.connect();
 
 
 // view engine setup
@@ -40,17 +47,11 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/', routes);
 app.use('/users', users);
 app.get('/db', function (request, response) {
-    pg.connect(conString , function(err, client, done) {
-        if (err) {
-            return console.error('error fetching client from pool', err);
-        }
-        client.query('SELECT * FROM test_table', function(err, result) {
-            done();
-            if (err)
-            { console.error(err); response.send("Error " + err); }
-            else
-            { response.send(result.rows); }
-        });
+    client.query('SELECT * FROM test_table', function(err, result) {
+        if (err)
+        { console.error(err); response.send("Error " + err); }
+        else
+        { response.send(result.rows); }
     });
 });
 
