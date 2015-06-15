@@ -4,9 +4,7 @@ var router = express.Router();
 
 /* GET users listing. */
 router.get('/', function(req, res, next) {
-    var client = db.getConnection();
-    client.connect();
-    client.query('SELECT * FROM student', function(err, result) {
+    db.query('SELECT * FROM student', function(err, result) {
         if (err) {
             console.error(err);
             res.send("Error " + err);
@@ -17,25 +15,22 @@ router.get('/', function(req, res, next) {
 });
 
 router.post('/', function(req, res, next) {
-    var client = db.getConnection();
-    client.connect();
-    client.query('INSERT INTO student(name, email,username,school,program),' +
-        'values($1,$2,$3,$4,$5),',
-        ['teemo','teemo@gmail.com','Captain','WLU','BBA'], function(err, result) {
+    var user = req.body;
+    db.query('INSERT INTO student(name, email,username,school,program),' +
+        'values($1,$2,$3,$4,$5) RETURN id',
+        [user.name, user.email, user.username, user.school, user.program], function(err, result) {
         if (err) {
             console.error(err);
             res.send("Error " + err);
         } else {
-            res.send(result);
+            res.send({id:result.rows[0].id});
         }
     });
 });
 
 
 router.get('/:id', function(req, res, next) {
-    var client = db.getConnection();
-    client.connect();
-    client.query('SELECT * FROM student WHERE id=($!)',[req.params.id], function(err, result) {
+    db.query('SELECT * FROM student WHERE id=$1',[req.params.id], function(err, result) {
         if (err) {
             console.error(err);
             res.send("Error " + err);
@@ -46,32 +41,97 @@ router.get('/:id', function(req, res, next) {
 });
 
 router.put('/:id', function(req, res, next) {
-    res.send('Updating user '+req.params.id);
+    db.query('UPDATE student(name, email,username,school,program),' +
+        'values($1,$2,$3,$4,$5) WHERE id=$6',
+        [user.name, user.email, user.username, user.school, user.program,req.params.id], function(err, result) {
+            if (err) {
+                console.error(err);
+                res.send("Error " + err);
+            } else {
+                res.send({id:result.rows[0].id});
+            }
+        });
 });
 
 
 router.delete('/:id', function(req, res, next) {
-    res.send('Deleting user '+req.params.id);
+    db.query('DELETE student WHERE id=$1',[req.params.id], function(err, result) {
+        if (err) {
+            console.error(err);
+            res.send("Error " + err);
+        } else {
+            res.send(result);
+        }
+    });
 });
 
 router.get('/:id/tasks', function(req, res, next) {
-    res.send('Here are user '+req.params.id+' tasks');
+    db.query('SELECT * FROM task WHERE id_user=$1',[req.params.id], function(err, result) {
+        if (err) {
+            console.error(err);
+            res.send("Error " + err);
+        } else {
+            res.send(result.rows);
+        }
+    });
+
 });
 
 router.post('/:id/tasks', function(req, res, next) {
-    res.send('Adding a task to user '+req.params.id+' tasks');
+    var task = req.body;
+    var userId = req.params.id;
+    db.query('INSERT INTO task (type, weight, description,' +
+        'url, complete, pages, id_user, id_course, due_date, due_time )' +
+        'VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING id',
+        [task.type, task.weight, task.description, task.url, task.complete, task.pages, userId,
+        task.course_id, task.due_date, task.due_time], function(err, result) {
+            if (err) {
+                console.error(err);
+                res.send("Error " + err);
+            } else {
+                res.send(result.rows[0].id);
+            }
+        });
 });
 
 router.get('/:id/tasks/:taskId', function(req, res, next) {
-    res.send('Here is user '+req.params.id+' task: '+req.params.taskId);
-});
+    db.query('SELECT * FROM task WHERE id_user=$1 AND id=$2',[req.params.id,req.params.taskId],
+        function(err, result) {
+            if (err) {
+                console.error(err);
+                res.send("Error " + err);
+            } else {
+                res.send(result.rows);
+            }
+    });});
 
 router.put('/:id/tasks/:taskId', function(req, res, next) {
-    res.send('Updating user '+req.params.id+' task: '+req.params.taskId);
+    var task = req.body;
+    var userId = req.params.id;
+    db.query('UPDATE task (type, weight, description,' +
+        'url, complete, pages, id_user, id_course, due_date, due_time )' +
+        'VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) WEHERE id=$11 and id_user=$12',
+        [task.type, task.weight, task.description, task.url, task.complete, task.pages, userId,
+            task.course_id, task.due_date, task.due_time, req.params.taskId, userId], function(err, result) {
+            if (err) {
+                console.error(err);
+                res.send("Error " + err);
+            } else {
+                res.send(result.rows);
+            }
+        });
 });
 
 router.delete('/:id/tasks/:taskId', function(req, res, next) {
-    res.send('Deleting user '+req.params.id+' task: '+req.params.taskId);
+    db.query('DELETE task WHERE id_user=$1 AND id=$2',[req.params.id,req.params.taskId],
+        function(err, result) {
+            if (err) {
+                console.error(err);
+                res.send("Error " + err);
+            } else {
+                res.send(result.rows);
+            }
+        });
 });
 
 module.exports = router;

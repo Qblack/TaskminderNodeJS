@@ -33,3 +33,5 @@ node_modules
 
 
 config.js
+.idea/jsLibraryMappings.xml
+.idea/TaskminderNodeJS.iml
