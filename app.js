@@ -5,14 +5,35 @@ var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var http = require('http');
+//var cors = require('cors');
 
-var routes = require('./routes/index');
-var users = require('./routes/users');
+
+
+
 
 
 
 var app = express();
+
 var conString  = 'postgres://gcleutjifmkgrw:D63xp6RFjXmGamLbiLiehyIXQ4@ec2-54-83-25-238.compute-1.amazonaws.com:5432/dcp5bvd5kbc84u';
+
+//var corsOptions = {
+//    origin: 'localhost:8000'
+//};
+//app.options('*', cors());
+////app.use(cors());
+
+app.use(function(req, res, next) {
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+    next();
+});
+
+var routes = require('./routes/index');
+var users = require('./routes/users');
+var courses = require('./routes/courses');
+var schools = require('./routes/schools');
 
 
 if (process.env.MODE=='production'){
@@ -35,6 +56,9 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', routes);
 app.use('/users', users);
+app.use('/courses',courses);
+app.use('/schools',schools);
+
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
@@ -78,5 +102,5 @@ if (app.get('env') === 'development') {
 }
 
 
-module.exports = app
+module.exports = app;
 

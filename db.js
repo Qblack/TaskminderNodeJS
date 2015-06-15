@@ -4,18 +4,17 @@
 'use strict';
 
 var pg = require('pg');
-
-var client = new pg.Client({
-    user:'gcleutjifmkgrw',
-    password : 'D63xp6RFjXmGamLbiLiehyIXQ4',
-    database : 'dcp5bvd5kbc84u',
-    port: 5432,
-    host: 'ec2-54-83-25-238.compute-1.amazonaws.com',
-    ssl: true
-});
+var config = require('./config');
+var conString = config.conString;
 
 module.exports = {
-    getConnection : function(){
-        return client;
-    }
+    query: function(text, values, cb) {
+        pg.connect(conString, function(err, client, done) {
+            client.query(text, values, function(err, result) {
+                done();
+                cb(err, result);
+            });
+        });
+    },
+    conString : conString
 };
