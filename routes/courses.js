@@ -9,7 +9,7 @@ var router = express.Router();
 
 /* GET cource listing. */
 router.get('/', function(req, res, next) {
-    db.query('SELECT * FROM Course', function(err, result) {
+    db.query('SELECT * FROM Course',null, function(err, result) {
         if (err) {
             console.error(err);
             res.send("Error " + err);
@@ -31,7 +31,7 @@ router.get('/:id', function(req, res, next) {
 });
 
 router.delete('/:id', function(req, res, next) {
-    db.query('DELETE Course WHERE id=$1',[req.params.id], function(err, result) {
+    db.query('DELETE Course WHERE id=$1',[req.params.id],function(err, result) {
         if (err) {
             console.error(err);
             res.send("Error " + err);
@@ -44,6 +44,7 @@ router.delete('/:id', function(req, res, next) {
 /* POST a new course. */
 router.post('/', function(req, res, next) {
     var course = req.body;
+    console.log(course);
     db.query('INSERT INTO course (code, name, term,' +
         'website, professor, section, description )' +
         'VALUES($1,$2,$3,$4,$5,$6,$7) RETURNING id',
@@ -54,7 +55,7 @@ router.post('/', function(req, res, next) {
                 console.error(err);
                 res.send("Error " + err);
             } else {
-                res.send(result.rows[0].id);
+                res.send({id:result.rows[0].id});
             }
         });
 });
