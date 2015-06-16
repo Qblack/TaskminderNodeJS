@@ -80,16 +80,21 @@ router.get('/:id/tasks', function(req, res, next) {
 router.post('/:id/tasks', function(req, res, next) {
     var task = req.body;
     var userId = req.params.id;
-    db.query('INSERT INTO task (type, weight, description,' +
-        'url, complete, pages, id_user, id_course, due_date, due_time )' +
-        'VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING id',
-        [task.type, task.weight, task.description, task.url, task.complete, task.pages, userId,
-        task.course_id, task.due_date, task.due_time], function(err, result) {
+    db.query('INSERT INTO task (' +
+        'type, weight, description,' +
+        'url, complete, pages, ' +
+        'id_user, id_course, due_date, ' +
+        'due_time, in_class, location )' +
+        'VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12) RETURNING id',
+        [task.type, task.weight, task.description,
+            task.url, task.complete, task.pages,
+            userId, task.course_id, task.due_date,
+            task.due_time, task.in_class, task.location], function(err, result) {
             if (err) {
                 console.error(err);
                 res.send("Error " + err);
             } else {
-                res.send(result.rows[0].id);
+                res.send({id:result.rows[0].id});
             }
         });
 });
