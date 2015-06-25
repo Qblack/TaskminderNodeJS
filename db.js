@@ -4,6 +4,7 @@
 'use strict';
 
 var pg = require('pg');
+var escape = require('pg-escape');
 var config = require('./config');
 var conString = config.conString;
 
@@ -16,5 +17,13 @@ module.exports = {
             });
         });
     },
-    conString : conString
+    conString : conString,
+    trimIfNotNull : function(string){
+        if(string!=null){
+            string = string.trim();
+            string = escape.string(string);
+        }return string;
+    }
+
+
 };
