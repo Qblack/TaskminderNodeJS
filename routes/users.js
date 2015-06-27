@@ -17,10 +17,10 @@ router.get('/', function(req, res, next) {
 
 router.post('/', function(req, res, next) {
     var user = req.body;
+    console.log(user);
     var password = user.password;
     var salt = crypto.randomBytes(128).toString('base64');
     var hashed_password = crypto.createHash('sha256').update(salt+password).digest('base64');
-
     db.query('INSERT INTO student(name, email,username,school,program, password, salt) ' +
         'values($1,$2,$3,$4,$5,$6,$7) RETURNING id',
         [user.name, user.login, user.username, user.school, user.program, hashed_password, salt], function(err, result) {
@@ -28,6 +28,7 @@ router.post('/', function(req, res, next) {
             console.error(err);
             res.send("Error " + err);
         } else {
+            console.log(result);
             res.send({id:result.rows[0].id});
         }
     });
@@ -44,6 +45,38 @@ router.get('/:id', function(req, res, next) {
         }
     });
 });
+
+router.post('/login', function(req, res, next){
+    var user = req.body;
+    var email = user.email;
+    var password = user.password;
+    var pwd_and_salt = {};
+
+    db.pg.connect(db.conString, function(err, client, done){
+        var query = client.query('SELECT password, salt, id FROM student WHERE email=$1',[email]);
+        query.on('row', function(row, res) {
+            pwd_and_salt = row;
+        });
+        query.on('end', function(result) {
+            if(result.rowCount!=1){
+                res.sendStatus(401);
+                res.send("User does not exist");
+            }else{
+                var hashed_password = crypto.createHash('sha256').update(pwd_and_salt.salt+password).digest('base64');
+                if(hashed_password==pwd_and_salt.password){
+                    var session_id = crypto.randomBytes(20).toString('base64');
+                    client.query('INSERT into session(user_id,session_id) values($1,$2)',[pwd_and_salt.id, session_id]);
+                    res.send({id: pwd_and_salt.id, session:session_id});
+                }else{
+                    res.sendStatus(401);
+                    res.send("Passwords did not match");
+                }
+            }
+        });
+    });
+});
+
+
 
 router.put('/:id', function(req, res, next) {
     db.query('UPDATE student(name, email,username,school,program),' +

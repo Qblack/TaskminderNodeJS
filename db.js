@@ -23,7 +23,8 @@ module.exports = {
             string = string.trim();
             string = escape.string(string);
         }return string;
-    }
+    },
+    pg:pg
 
 
 };
