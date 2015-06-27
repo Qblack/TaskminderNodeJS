@@ -50,25 +50,25 @@ router.post('/login', function(req, res, next){
     var user = req.body;
     var email = user.email;
     var password = user.password;
-    var pwd_and_salt = {};
+    var user_result = {};
 
     db.pg.connect(db.conString, function(err, client, done){
-        var query = client.query('SELECT password, salt, id FROM student WHERE email=$1',[email]);
+        var query = client.query('SELECT password, salt, id, username FROM student WHERE email=$1',[email]);
         query.on('row', function(row, res) {
-            pwd_and_salt = row;
+            user_result = row;
         });
         query.on('end', function(result) {
             if(result.rowCount!=1){
-                res.sendStatus(401);
+                res.status(401);
                 res.send("User does not exist");
             }else{
-                var hashed_password = crypto.createHash('sha256').update(pwd_and_salt.salt+password).digest('base64');
-                if(hashed_password==pwd_and_salt.password){
+                var hashed_password = crypto.createHash('sha256').update(user_result.salt+password).digest('base64');
+                if(hashed_password==user_result.password){
                     var session_id = crypto.randomBytes(20).toString('base64');
-                    client.query('INSERT into session(user_id,session_id) values($1,$2)',[pwd_and_salt.id, session_id]);
-                    res.send({id: pwd_and_salt.id, session:session_id});
+                    client.query('INSERT into session(user_id,session_id) values($1,$2)',[user_result.id, session_id]);
+                    res.send({id: user_result.id, session:session_id,username:user_result.username});
                 }else{
-                    res.sendStatus(401);
+                    res.status(401);
                     res.send("Passwords did not match");
                 }
             }
