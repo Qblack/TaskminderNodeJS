@@ -76,6 +76,18 @@ router.post('/login', function(req, res, next){
     });
 });
 
+router.delete('/login', function(req, res, next) {
+    var session = req.query.session;
+    var user_id = req.query.user_id;
+    console.log(session);
+    db.query("DELETE FROM session WHERE user_id=$1 AND session_id=$2",[user_id,session],function(err,result){
+        console.log(result);
+        res.send('success');
+    });
+
+});
+
+
 
 
 router.put('/:id', function(req, res, next) {
@@ -109,7 +121,11 @@ router.get('/:id/tasks', function(req, res, next) {
             console.error(err);
             res.send("Error " + err);
         } else {
-            res.send(result.rows);
+            if(result.rowCount==0){
+                res.send([]);
+            }else{
+                res.send(result.rows);
+            }
         }
     });
 
