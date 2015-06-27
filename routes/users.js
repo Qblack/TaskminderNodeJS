@@ -1,5 +1,6 @@
 var express = require('express');
 var db = require("../db");
+var crypto = require('crypto')
 var router = express.Router();
 
 /* GET users listing. */
@@ -16,9 +17,13 @@ router.get('/', function(req, res, next) {
 
 router.post('/', function(req, res, next) {
     var user = req.body;
-    db.query('INSERT INTO student(name, email,username,school,program),' +
-        'values($1,$2,$3,$4,$5) RETURN id',
-        [user.name, user.email, user.username, user.school, user.program], function(err, result) {
+    var password = user.password;
+    var salt = crypto.randomBytes(128).toString('base64');
+    var hashed_password = crypto.createHash('sha256').update(salt+password).digest('base64');
+
+    db.query('INSERT INTO student(name, email,username,school,program, password, salt) ' +
+        'values($1,$2,$3,$4,$5,$6,$7) RETURNING id',
+        [user.name, user.login, user.username, user.school, user.program, hashed_password, salt], function(err, result) {
         if (err) {
             console.error(err);
             res.send("Error " + err);
