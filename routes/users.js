@@ -1,11 +1,14 @@
 var express = require('express');
 var db = require("../db");
-var crypto = require('crypto')
+var crypto = require('crypto');
+var bodyParser = require('body-parser');
+var morgan = require('morgan');
+var jwt    = require('jsonwebtoken'); // used to create, sign, and verify tokens
 var router = express.Router();
 
-/* GET users listing. */
+/* GET Users listing. */
 router.get('/', function(req, res, next) {
-    db.query('SELECT * FROM student', function(err, result) {
+    db.query('SELECT * FROM student', null, function(err, result) {
         if (err) {
             console.error(err);
             res.send("Error " + err);
@@ -88,8 +91,6 @@ router.delete('/login', function(req, res, next) {
 });
 
 
-
-
 router.put('/:id', function(req, res, next) {
     db.query('UPDATE student(name, email,username,school,program),' +
         'values($1,$2,$3,$4,$5) WHERE id=$6',
@@ -116,6 +117,8 @@ router.delete('/:id', function(req, res, next) {
 });
 
 router.get('/:id/tasks', function(req, res, next) {
+    console.log(req.params);
+
     db.query('SELECT * FROM task WHERE id_user=$1',[req.params.id], function(err, result) {
         if (err) {
             console.error(err);
