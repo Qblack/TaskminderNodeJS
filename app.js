@@ -57,8 +57,8 @@ app.use(function(req, res, next) {
 
 
 if (app.get('env') === 'development') {
-    app.listen(1337, '127.0.0.1');
-    console.log('Server running at http://127.0.0.1:1337/');
+    app.listen(1337, '192.168.0.18');
+    console.log('Server running at http://192.168.0.18:1337/');
   app.use(function(err, req, res, next) {
     res.status(err.status || 500);
     res.render('error', {
