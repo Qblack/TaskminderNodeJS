@@ -5,8 +5,8 @@
 
 var pg = require('pg');
 var escape = require('pg-escape');
-//var config = require('./config');
-var conString = process.env.DATABASE_URL;
+var config = require('./config');
+var conString = process.env.DATABASE_URL || config.conString;
 
 module.exports = {
     query: function(text, values, cb) {

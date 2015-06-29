@@ -8,7 +8,7 @@ var http = require('http');
 var crypto = require('crypto');
 
 var jwt    = require('jsonwebtoken'); // used to create, sign, and verify tokens
-//var config = require('./config'); // get our config file
+var config = require('./config'); // get our config file
 
 var Routes = require('./routes/index');
 var Users = require('./routes/users');
@@ -21,7 +21,7 @@ var app = express();
 app.use(function(req, res, next) {
     res.header("Access-Control-Allow-Origin", "*");
     res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+    res.header["Access-Control-Allow-Headers"] = "X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept, Authorization";
     next();
 });
 
@@ -29,7 +29,7 @@ app.use(function(req, res, next) {
 var port = process.env.PORT || 1337; // used to create, sign, and verify tokens
 //var ip = process.env.IP || '192.168.0.18';
 
-app.set('superSecret', process.env.secret); // secret variable
+app.set('superSecret', process.env.secret || config.secret); // secret variable
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use(morgan('dev'));
@@ -107,6 +107,32 @@ apiRoutes.delete('/authenticate', function(req, res, next) {
 
 });
 
+
+apiRoutes.post('/users', function(req, res, next) {
+    if(req.method=='OPTIONS'){
+        var headers = makeOptionHeaders();
+        res.writeHead(200, headers);
+        res.end();
+    }else {
+        var user = req.body;
+        var password = user.password;
+        var salt = crypto.randomBytes(128).toString('base64');
+        var hashed_password = crypto.createHash('sha256').update(salt + password).digest('base64');
+        db.query('INSERT INTO student(name, email,username,school,program, password, salt) ' +
+            'values($1,$2,$3,$4,$5,$6,$7) RETURNING id',
+            [user.name, user.login, user.username, user.school, user.program, hashed_password, salt], function (err, result) {
+                if (err) {
+                    console.error(err);
+                    res.send("Error " + err);
+                } else {
+                    console.log(result);
+                    res.send({id: result.rows[0].id});
+                }
+            });
+    }
+});
+
+
 //route middleware to verify a token
 apiRoutes.use(function(req, res, next) {
     if(req.method=='OPTIONS'){
@@ -143,24 +169,6 @@ apiRoutes.use(function(req, res, next) {
             });
         }
     }
-});
-
-apiRoutes.post('/users', function(req, res, next) {
-    var user = req.body;
-    var password = user.password;
-    var salt = crypto.randomBytes(128).toString('base64');
-    var hashed_password = crypto.createHash('sha256').update(salt+password).digest('base64');
-    db.query('INSERT INTO student(name, email,username,school,program, password, salt) ' +
-        'values($1,$2,$3,$4,$5,$6,$7) RETURNING id',
-        [user.name, user.login, user.username, user.school, user.program, hashed_password, salt], function(err, result) {
-            if (err) {
-                console.error(err);
-                res.send("Error " + err);
-            } else {
-                console.log(result);
-                res.send({id:result.rows[0].id});
-            }
-        });
 });
 
 
