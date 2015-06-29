@@ -145,6 +145,25 @@ apiRoutes.use(function(req, res, next) {
     }
 });
 
+apiRoutes.post('/users', function(req, res, next) {
+    var user = req.body;
+    var password = user.password;
+    var salt = crypto.randomBytes(128).toString('base64');
+    var hashed_password = crypto.createHash('sha256').update(salt+password).digest('base64');
+    db.query('INSERT INTO student(name, email,username,school,program, password, salt) ' +
+        'values($1,$2,$3,$4,$5,$6,$7) RETURNING id',
+        [user.name, user.login, user.username, user.school, user.program, hashed_password, salt], function(err, result) {
+            if (err) {
+                console.error(err);
+                res.send("Error " + err);
+            } else {
+                console.log(result);
+                res.send({id:result.rows[0].id});
+            }
+        });
+});
+
+
 // apply the routes to our application with the prefix /api
 app.use('/api', apiRoutes);
 app.use('/api/users', Users);
