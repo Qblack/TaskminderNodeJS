@@ -27,7 +27,7 @@ app.use(function(req, res, next) {
 
 
 var port = process.env.PORT || 1337; // used to create, sign, and verify tokens
-var ip = process.env.IP || '192.168.0.18';
+//var ip = process.env.IP || '192.168.0.18';
 
 app.set('superSecret', process.env.secret); // secret variable
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -172,8 +172,8 @@ app.use(function(req, res, next) {
 //    });
 //}
 
-app.listen(port, ip);
-console.log('Server running at http://'+ip+':'+port+'/api');
+app.listen(port);
+console.log('Server running at http://'+port+'/api');
 
 
 module.exports = app;
