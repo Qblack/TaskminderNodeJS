@@ -163,8 +163,6 @@ router.put('/:id/tasks/:taskId', function(req, res, next) {
             db.trimIfNotNull(task.title),
             req.params.taskId,
             req.params.id];
-        console.log(values);
-
         db.query("UPDATE task SET type=$1, weight=$2, description=$3, url=$4, complete=$5, pages=$6," +
             "id_course=$7, due_date=$8, due_time=$9, in_class=$10, location=$11, title=$12" +
             " WHERE id=$13 and id_user=$14;",
