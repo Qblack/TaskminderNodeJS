@@ -102,7 +102,6 @@ apiRoutes.delete('/authenticate', function(req, res, next) {
     var session = req.query.token;
     var user_id = req.query.user_id;
     db.query("DELETE FROM session WHERE user_id=$1 AND token=$2",[user_id,session],function(err,result){
-        console.log(result);
         res.send('success');
     });
 
@@ -173,7 +172,7 @@ app.use(function(req, res, next) {
 //    });
 //}
 
-app.listen(1337, ip);
+app.listen(port, ip);
 console.log('Server running at http://'+ip+':'+port+'/api');
 
 
