@@ -24,7 +24,16 @@ module.exports = {
             string = escape.string(string);
         }return string;
     },
-    pg:pg
+    pg:pg,
+
+    isAuthorized : function (req){
+        var authorized =  true;
+        if(req.params.id){
+            if(req.params.id!=req.decoded.id){
+                authorized = false;
+            }
+        }return authorized;
+    }
 
 
 };

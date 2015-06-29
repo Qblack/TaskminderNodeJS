@@ -93,6 +93,16 @@ apiRoutes.post('/authenticate', function(req, res) {
     });
 });
 
+apiRoutes.delete('/login', function(req, res, next) {
+    var session = req.query.token;
+    var user_id = req.query.user_id;
+    console.log(session);
+    db.query("DELETE FROM session WHERE user_id=$1 AND token=$2",[user_id,session],function(err,result){
+        console.log(result);
+        res.send('success');
+    });
+
+});
 
 //route middleware to verify a token
 apiRoutes.use(function(req, res, next) {
@@ -117,13 +127,11 @@ apiRoutes.use(function(req, res, next) {
         if (token) {
             // verifies secret and checks exp
             jwt.verify(token, app.get('superSecret'), function(err, decoded) {
-                console.log(decoded);
-
                 if (err) {
-                    //TODO check proper token
                     return res.json({ success: false, message: 'Failed to authenticate token.' });
                 } else {
                     // if everything is good, save to request for use in other routes
+
                     req.decoded = decoded;
                     next();
                 }
