@@ -8,7 +8,7 @@ var http = require('http');
 var crypto = require('crypto');
 
 var jwt    = require('jsonwebtoken'); // used to create, sign, and verify tokens
-var config = require('./config'); // get our config file
+//var config = require('./config'); // get our config file
 
 var Routes = require('./routes/index');
 var Users = require('./routes/users');
@@ -29,7 +29,7 @@ app.use(function(req, res, next) {
 var port = process.env.PORT || 1337; // used to create, sign, and verify tokens
 var ip = process.env.IP || '192.168.0.18';
 
-app.set('superSecret', config.secret); // secret variable
+app.set('superSecret', process.env.secret); // secret variable
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use(morgan('dev'));
