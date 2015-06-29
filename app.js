@@ -1,16 +1,18 @@
 var express = require('express');
 var path = require('path');
-var logger = require('morgan');
-var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var morgan = require('morgan');
-var http = require('http');
 var crypto = require('crypto');
 
 var jwt    = require('jsonwebtoken'); // used to create, sign, and verify tokens
-var config = require('./config'); // get our config file
+config = {};
+try {
+    require.resolve("./config");
+    config = require('./config'); // get our config file
+} catch(e) {
+    console.error("config is not found");
+}
 
-var Routes = require('./routes/index');
 var Users = require('./routes/users');
 var Courses = require('./routes/courses');
 var Schools = require('./routes/schools');

@@ -5,7 +5,13 @@
 
 var pg = require('pg');
 var escape = require('pg-escape');
-var config = require('./config');
+config = {};
+try {
+    require.resolve("./config");
+    config = require('./config'); // get our config file
+} catch(e) {
+    console.error("config is not found");
+}
 var conString = process.env.DATABASE_URL || config.conString;
 
 module.exports = {
