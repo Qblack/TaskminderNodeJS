@@ -60,6 +60,24 @@ apiRoutes.options('/authenticate',function(req, res){
     res.end();
 });
 
+apiRoutes.get('/users/identifiers', function(req, res, next) {
+    if(req.method=='OPTIONS'){
+        var headers = makeOptionHeaders();
+        res.writeHead(200, headers);
+        res.end();
+    }else {
+        db.query('SELECT email, username FROM student', null, function (err, result) {
+            if (err) {
+                console.error(err);
+                res.send("Error " + err);
+            } else {
+                res.send(result.rows);
+            }
+        });
+    }
+});
+
+
 // route to authenticate a user (POST http://localhost:8080/api/authenticate)
 apiRoutes.post('/authenticate', function(req, res) {
     var email = req.body.email;
@@ -125,7 +143,8 @@ apiRoutes.post('/users', function(req, res, next) {
             [user.name, user.login, user.username, user.school, user.program, hashed_password, salt], function (err, result) {
                 if (err) {
                     console.error(err);
-                    res.send("Error " + err);
+                    res.status(412);
+                    res.send({success:false, message:err});
                 } else {
                     console.log(result);
                     res.send({id: result.rows[0].id});
@@ -133,6 +152,7 @@ apiRoutes.post('/users', function(req, res, next) {
             });
     }
 });
+
 
 
 //route middleware to verify a token
