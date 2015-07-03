@@ -202,7 +202,7 @@ app.use(function(req, res, next) {
 //}
 
 app.listen(port);
-console.log('Server running at http://'+port+'/api');
+console.log('Server running at http://localhost:'+port+'/api');
 
 
 module.exports = app;
