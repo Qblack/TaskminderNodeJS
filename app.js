@@ -16,6 +16,7 @@ try {
 var Users = require('./routes/users');
 var Courses = require('./routes/courses');
 var Schools = require('./routes/schools');
+var Enrollments = require('./routes/enrollments');
 var db = require('./db');
 
 var app = express();
@@ -199,7 +200,7 @@ app.use('/api', apiRoutes);
 app.use('/api/users', Users);
 app.use('/api/courses',Courses);
 app.use('/api/schools',Schools);
-
+app.use('/api/enrollments',Enrollments);
 // error handlers
 
 //catch 404 and forward to error handler
