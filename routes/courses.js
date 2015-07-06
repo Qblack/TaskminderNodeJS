@@ -66,15 +66,16 @@ router.delete('/:id', function(req, res, next) {
 /* POST a new course. */
 router.post('/', function(req, res, next) {
     var course = req.body;
-    db.query('INSERT INTO course (code, name, term,' +
-        'website, professor, section, description )' +
-        'VALUES($1,$2,$3,$4,$5,$6,$7) RETURNING id',
-        [course.code, course.name, course.term,
+    db.query('INSERT INTO course (code, name, semester,' +
+        'website, professor, section, description, year, id_school, syllabus )' +
+        'VALUES($1,$2,$3,$4,$5,$6,$7, $8, $9, $10) RETURNING id',
+        [course.code, course.name, course.semester.toLowerCase(),
             course.website, course.professor,course.section,
-            course.description], function(err, result) {
+            course.description, course.year, course.id_school, course.syllabus], function(err, result) {
             if (err) {
                 console.error(err);
-                res.send("Error " + err);
+                res.status(409);
+                res.send({success:false,message:err });
             } else {
                 res.send({id:result.rows[0].id});
             }
