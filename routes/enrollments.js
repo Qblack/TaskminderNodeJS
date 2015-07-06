@@ -42,18 +42,20 @@ router.get('/', function(req, res, next) {
 });
 
 router.post('/', function(req, res, next) {
-    var enrollment = req.body;
-    db.query('INSERT INTO enrollment (id_user, id_course )' +
-        'VALUES($1,$2) RETURNING id',
-        [enrollment.id_user, enrollment.id_course], function(err, result) {
-            if (err) {
-                console.error(err);
-                res.status(400);
-                res.send({success:false, message: err});
-            } else {
-                res.send({success:true, message: result.rows[0].id});
-            }
-        });
+    if(db.isAuthorized(req)) {
+        var enrollment = req.body;
+        db.query('INSERT INTO enrollment (id_user, id_course )' +
+            'VALUES($1,$2) RETURNING id',
+            [enrollment.id_user, enrollment.id_course], function (err, result) {
+                if (err) {
+                    console.error(err);
+                    res.status(400);
+                    res.send({success: false, message: err});
+                } else {
+                    res.send({success: true, message: result.rows[0].id});
+                }
+            });
+    }
 });
 
 module.exports = router;

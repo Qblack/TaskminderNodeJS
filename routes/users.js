@@ -87,6 +87,27 @@ router.get('/:id/tasks', function(req, res, next) {
     }
 });
 
+router.get('/:id/enrollments', function(req, res, next) {
+    if(db.isAuthorized(req)){
+        db.query('SELECT course.* FROM course LEFT JOIN enrollment ON course.id=enrollment.id_course WHERE enrollment.id_user=$1',[req.params.id], function(err, result) {
+            if (err) {
+                console.error(err);
+                res.send(500);
+                res.send(err);
+            } else {
+                if(result.rowCount==0){
+                    res.send([]);
+                }else{
+                    res.send(result.rows);
+                }
+            }
+        });
+    }else{
+        res.send(403);
+    }
+});
+
+
 router.post('/:id/tasks', function(req, res, next) {
     if(db.isAuthorized(req)) {
         var task = req.body;
