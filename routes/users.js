@@ -78,6 +78,7 @@ router.get('/:id/tasks', function(req, res, next) {
                 if(result.rowCount==0){
                     res.send([]);
                 }else{
+                    console.log(result.rows);
                     res.send(result.rows);
                 }
             }
@@ -112,23 +113,29 @@ router.post('/:id/tasks', function(req, res, next) {
     if(db.isAuthorized(req)) {
         var task = req.body;
         var userId = req.params.id;
-        db.query('INSERT INTO task (' +
-            'type, weight, description,' +
-            'url, complete, pages, ' +
-            'id_user, id_course, due_date, ' +
-            'due_time, in_class, location, title )' +
-            'VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13) RETURNING id',
-            [task.type, task.weight, task.description,
-                task.url, task.complete, task.pages,
-                userId, task.course_id, task.due_date,
-                task.due_time, task.in_class, task.location, task.title], function (err, result) {
-                if (err) {
-                    console.error(err);
-                    res.send("Error " + err);
-                } else {
-                    res.send({id: result.rows[0].id});
-                }
-            });
+        if(task.weight && typeof task.weight !== 'number'){
+            res.status(400);
+            res.send({success:false, message:"Weight needs to be a float."});
+        }else{
+            db.query('INSERT INTO task (' +
+                'type, weight, description,' +
+                'url, complete, pages, ' +
+                'id_user, id_course, due_date, ' +
+                'due_time, in_class, location, title )' +
+                'VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13) RETURNING id',
+                [task.type, task.weight, task.description,
+                    task.url, task.complete, task.pages,
+                    userId, task.course_id, task.due_date,
+                    task.due_time, task.in_class, task.location, task.title], function (err, result) {
+                    if (err) {
+                        console.log(err);
+                        res.status(400);
+                        res.send({success:false, message:err});
+                    } else {
+                        res.send({id: result.rows[0].id});
+                    }
+                });
+        }
     }else{
         res.send(403);
     }
