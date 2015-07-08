@@ -113,10 +113,13 @@ router.post('/:id/tasks', function(req, res, next) {
     if(db.isAuthorized(req)) {
         var task = req.body;
         var userId = req.params.id;
-        if(task.weight && typeof task.weight !== 'number'){
+        if(isNaN(task.weight)){
             res.status(400);
             res.send({success:false, message:"Weight needs to be a float."});
         }else{
+            console.log(task.weight);
+            if(task.weight==''){task.weight=0;}
+
             db.query('INSERT INTO task (' +
                 'type, weight, description,' +
                 'url, complete, pages, ' +
