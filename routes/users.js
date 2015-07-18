@@ -113,7 +113,7 @@ router.post('/:id/tasks', function(req, res, next) {
     if(db.isAuthorized(req)) {
         var task = req.body;
         var userId = req.params.id;
-        if(isNaN(task.weight)){
+        if(task.weight && isNaN(task.weight)){
             res.status(400);
             res.send({success:false, message:"Weight needs to be a float."});
         }else{
