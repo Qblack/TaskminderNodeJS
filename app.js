@@ -57,6 +57,7 @@ function makeOptionHeaders() {
 
 apiRoutes.options('/authenticate',function(req, res){
     var headers = makeOptionHeaders();
+    console.log("making option headers");
     res.writeHead(200, headers);
     res.end();
 });
@@ -77,7 +78,6 @@ apiRoutes.get('/users/identifiers', function(req, res, next) {
         });
     }
 });
-
 
 // route to authenticate a user (POST http://localhost:8080/api/authenticate)
 apiRoutes.post('/authenticate', function(req, res) {
