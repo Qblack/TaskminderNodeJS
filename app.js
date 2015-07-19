@@ -81,42 +81,48 @@ apiRoutes.get('/users/identifiers', function(req, res, next) {
 
 // route to authenticate a user (POST http://localhost:8080/api/authenticate)
 apiRoutes.post('/authenticate', function(req, res) {
-    var email = req.body.email;
-    var password = req.body.password;
-    var user = {};
-    db.pg.connect(db.conString, function(err, client, done){
-        var query = client.query('SELECT * FROM student WHERE email=$1',[email]);
-        query.on('row', function(row, res){
-            user = row;
-        });
-        query.on('end', function(result){
-            if(result.rowCount!=1){
-                res.status(401);
-                res.json({ success: false, message: 'Authentication failed. User not found.' });
-            }else {
-                var hashed_password = crypto.createHash('sha256').update(user.salt + password).digest('base64');
-                if (hashed_password == user.password) {
-                    // if user is found and password is right
-                    // create a token
-                    var token = jwt.sign(user, app.get('superSecret'), {
-                        expiresInMinutes: 1440 // expires in 24 hours
-                    });
-                    // return the information including token as JSON
-                    client.query('INSERT into session(user_id,token) values($1,$2)', [user.id, token]);
-                    res.json({
-                        success: true,
-                        message: 'Enjoy your token!',
-                        token: token,
-                        id: user.id,
-                        username : user.username
-                    });
-                } else {
+    if(req.method=='OPTIONS'){
+        var headers = makeOptionHeaders();
+        res.writeHead(200, headers);
+        res.end();
+    }else {
+        var email = req.body.email;
+        var password = req.body.password;
+        var user = {};
+        db.pg.connect(db.conString, function (err, client, done) {
+            var query = client.query('SELECT * FROM student WHERE email=$1', [email]);
+            query.on('row', function (row, res) {
+                user = row;
+            });
+            query.on('end', function (result) {
+                if (result.rowCount != 1) {
                     res.status(401);
-                    res.json({ success: false, message: 'Authentication failed. Wrong password.' });
+                    res.json({success: false, message: 'Authentication failed. User not found.'});
+                } else {
+                    var hashed_password = crypto.createHash('sha256').update(user.salt + password).digest('base64');
+                    if (hashed_password == user.password) {
+                        // if user is found and password is right
+                        // create a token
+                        var token = jwt.sign(user, app.get('superSecret'), {
+                            expiresInMinutes: 1440 // expires in 24 hours
+                        });
+                        // return the information including token as JSON
+                        client.query('INSERT into session(user_id,token) values($1,$2)', [user.id, token]);
+                        res.json({
+                            success: true,
+                            message: 'Enjoy your token!',
+                            token: token,
+                            id: user.id,
+                            username: user.username
+                        });
+                    } else {
+                        res.status(401);
+                        res.json({success: false, message: 'Authentication failed. Wrong password.'});
+                    }
                 }
-            }
+            });
         });
-    });
+    }
 });
 
 apiRoutes.delete('/authenticate', function(req, res, next) {
