@@ -196,13 +196,14 @@ router.put('/:id/tasks/:taskId', function(req, res, next) {
 
 router.delete('/:id/tasks/:taskId', function(req, res, next) {
     if(db.isAuthorized(req)) {
-        db.query('DELETE task WHERE id_user=$1 AND id=$2', [req.params.id, req.params.taskId],
+        db.query('DELETE FROM task WHERE id_user=$1 AND id=$2', [req.params.id, req.params.taskId],
             function (err, result) {
                 if (err) {
                     console.error(err);
-                    res.send("Error " + err);
+                    res.status(500);
+                    res.send({success:false, message:err});
                 } else {
-                    res.send(result.rows);
+                    res.send({success:true, message: "Task successfulyl deleted"});
                 }
             });
     }else{
