@@ -128,7 +128,7 @@ router.post('/:id/tasks', function(req, res, next) {
                 'VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13) RETURNING id',
                 [task.type, task.weight, task.description,
                     task.url, task.complete, task.pages,
-                    userId, task.course_id, task.due_date,
+                    userId, task.id_course, task.due_date,
                     task.due_time, task.in_class, task.location, task.title], function (err, result) {
                     if (err) {
                         console.log(err);
@@ -184,7 +184,7 @@ router.put('/:id/tasks/:taskId', function(req, res, next) {
                 if (err) {
                     console.error(err);
                     res.status(500);
-                    res.send({error: "Error " + err});
+                    res.send({success:false, message:err});
                 } else {
                     res.send(result);
                 }
