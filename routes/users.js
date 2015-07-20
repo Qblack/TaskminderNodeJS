@@ -111,33 +111,57 @@ router.get('/:id/enrollments', function(req, res, next) {
 
 router.post('/:id/tasks', function(req, res, next) {
     if(db.isAuthorized(req)) {
-        var task = req.body;
+        var tasks = req.body;
         var userId = req.params.id;
-        if(task.weight && isNaN(task.weight)){
-            res.status(400);
-            res.send({success:false, message:"Weight needs to be a float."});
+        console.log(tasks);
+        if(tasks.count==1 && tasks[0].id==undefined){
+            var task = tasks[0];
+            if(task.weight && isNaN(task.weight)){
+                res.status(400);
+                res.send({success:false, message:"Weight needs to be a float."});
+            }else{
+                if(task.weight==''){task.weight=0;}
+                db.query('INSERT INTO task (' +
+                    'type, weight, description,' +
+                    'url, complete, pages, ' +
+                    'id_user, id_course, due_date, ' +
+                    'due_time, in_class, location, title )' +
+                    'VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13) RETURNING id',
+                    [task.type, task.weight, task.description,
+                        task.url, task.complete, task.pages,
+                        userId, task.id_course, task.due_date,
+                        task.due_time, task.in_class, task.location, task.title], function (err, result) {
+                        if (err) {
+                            console.log(err);
+                            res.status(400);
+                            res.send({success:false, message:err});
+                        } else {
+                            res.send({id: result.rows[0].id});
+                        }
+                    });
+            }
         }else{
-            console.log(task.weight);
-            if(task.weight==''){task.weight=0;}
+            //For the master task copying
+            tasks.forEach(function(task){
+                db.query('INSERT INTO task (' +
+                    'type, weight, description,' +
+                    'url, complete, pages, ' +
+                    'id_user, id_course, due_date, ' +
+                    'due_time, in_class, location, title, id_master )' +
+                    'VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14) RETURNING id',
+                    [task.type, task.weight, task.description,
+                        task.url, false, task.pages,
+                        userId, task.id_course, task.due_date,
+                        task.due_time, task.in_class, task.location, task.title, task.id], function (err, result) {
+                        if (err) {
+                            console.log(err);
+                            res.status(400);
+                            res.send({success:false, message:err});
+                        }
+                    });
+            });
+            res.send({success:true, message:"Tasks added successfully."})
 
-            db.query('INSERT INTO task (' +
-                'type, weight, description,' +
-                'url, complete, pages, ' +
-                'id_user, id_course, due_date, ' +
-                'due_time, in_class, location, title )' +
-                'VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13) RETURNING id',
-                [task.type, task.weight, task.description,
-                    task.url, task.complete, task.pages,
-                    userId, task.id_course, task.due_date,
-                    task.due_time, task.in_class, task.location, task.title], function (err, result) {
-                    if (err) {
-                        console.log(err);
-                        res.status(400);
-                        res.send({success:false, message:err});
-                    } else {
-                        res.send({id: result.rows[0].id});
-                    }
-                });
         }
     }else{
         res.send(403);
