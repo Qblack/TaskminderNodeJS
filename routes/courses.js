@@ -82,4 +82,46 @@ router.post('/', function(req, res, next) {
         });
 });
 
+router.get('/:id/tasks', function(req, res, next) {
+    db.query('SELECT * FROM master_task WHERE id_course=$1', [req.params.id],
+        function (err, result) {
+            if (err) {
+                console.error(err);
+                res.status(500);
+                res.send({success:false, message:'Could not find tasks'});
+            } else {
+                res.send(result.rows);
+            }
+        });
+});
+
+router.post('/:id/tasks', function(req, res, next) {
+    var task = req.body;
+    var courseId = req.params.id;
+    if(task.weight && isNaN(task.weight)){
+        res.status(400);
+        res.send({success:false, message:"Weight needs to be a float."});
+    }else{
+        if(task.weight==''){task.weight=0;}
+        db.query('INSERT INTO master_task (' +
+            'type, weight, description,' +
+            'url, pages, ' +
+            'id_course, due_date, ' +
+            'due_time, in_class, location, title )' +
+            'VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11) RETURNING id',
+            [task.type, task.weight, task.description,
+                task.url,task.pages,
+                courseId, task.due_date,
+                task.due_time, task.in_class, task.location, task.title], function (err, result) {
+                if (err) {
+                    console.log(err);
+                    res.status(400);
+                    res.send({success:false, message:err});
+                } else {
+                    res.send({id: result.rows[0].id});
+                }
+            });
+    }
+});
+
 module.exports = router;
