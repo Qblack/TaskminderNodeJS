@@ -52,7 +52,7 @@ router.post('/', function(req, res, next) {
                     res.status(400);
                     res.send({success: false, message: err});
                 } else {
-                    res.send({success: true, message: result.rows[0].id});
+                    res.send({success: true, data: result.rows[0]});
                 }
             });
     }
